@@ -4,15 +4,25 @@ const axios = require('axios')
 
 const riotapi = process.env.RIOTAPI
 
-const gameName = "a sewer rat"
-const tagLine = "000"
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('player')
-    .setDescription('Responds with player'),
+    .setDescription('Responds with player')
+  // Kig på Modals 
+  // discord.js
+    .addStringOption(option =>
+      option.setName('summoner_name')
+        .setDescription('The name of the summoner'))
+    .addStringOption(option =>
+      option.setName('summoner_tagline')
+        .setDescription('The hashtag of the summoner without hashtag')),
   async execute(interaction) {
     try {
+      let gameName = interaction.options.get('summoner_name');
+      const tagLine = interaction.options.getString('summoner_tagline')
+
+      gameName = gameName.value.replace(/ /g, '%20');
+
       const response = await axios.get(`https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${riotapi}`);
       const playerPuuid = response.data.puuid
       const newResponse = await axios.get(`https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerPuuid}/ids?start=0&count=20&api_key=${riotapi}`);
