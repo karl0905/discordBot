@@ -40,61 +40,103 @@ module.exports = {
         const assists = matchingParticipant.assists;
         const champion = matchingParticipant.championName;
         const lane = matchingParticipant.lane.charAt(0).toUpperCase() + matchingParticipant.lane.slice(1).toLowerCase();
-        const role = matchingParticipant.role
-        const totalMinionsKilled = matchingParticipant.totalMinionsKilled
+        const cs = matchingParticipant.totalMinionsKilled + matchingParticipant.neutralMinionsKilled
         const totalDamageDealtToChampions = matchingParticipant.totalDamageDealtToChampions
-        const pentaKills = matchingParticipant.pentaKills
         const win = matchingParticipant.win
+        const doubleKills = matchingParticipant.doubleKills
         const tripleKills = matchingParticipant.tripleKills
+        const quadraKills = matchingParticipant.quadraKills
+        const pentaKills = matchingParticipant.pentaKills
         const totalDamageTaken = matchingParticipant.totalDamageTaken
-        const spell1Casts = matchingParticipant.spess1Casts
+        const spell1Casts = matchingParticipant.spell1Casts
 
         const gameDuration = matchData.info.gameDuration
-        const gameMode = matchData.info.gameMode
+        const csPerMinute = cs / (gameDuration / 60)
 
+        // Description string based on performance
         let regularFieldDescription
-
         if (kills > deaths) {
           regularFieldDescription = "Jacob spillede godt 8)"
         } else {
           regularFieldDescription = "Jacob spillede ik så godt :("
         }
+
+        const overallPerformance = (() => {
+          switch (true) {
+            case pentaKills > 0:
+              return "PEEENTAAA RAAAAAHH 🗣️🔥🔥"
+            case kills > 20:
+              return "En absolut gud RAAAH 🗣️🔥🔥"
+            case kills + assists > deaths:
+              return "Positiv KDA, godt min dreng"
+            case kills + assists < deaths:
+              return "Måske du skal uninstall, baus wannabe?"
+          }
+        })();
+
+        // If big damage taken, display
+        let tank;
+        if (totalDamageTaken > 50000) {
+          tank = true
+        }
+
+        // Switch to determine kill message 
+        const killMessage = (() => {
+          switch (true) {
+            case pentaKills > 0:
+              return `Penta Kills: ${pentaKills}`;
+            case quadraKills > 0:
+              return `Quadra Kills: ${quadraKills}`;
+            case tripleKills > 0:
+              return `Triple Kills: ${tripleKills}`;
+            case doubleKills > 0:
+              return `Double Kills: ${doubleKills}`;
+            default:
+              return 'No Multi-Kills';
+          }
+        })();
+
+        // Embedded message defined here
         const message = new EmbedBuilder()
           .setColor(0x0099FF)
-          .setTitle('Review af Jacobs nyeste game!!')
+          .setTitle('Nyt game ALERT')
           // lav evt. link til u.gg med summoner_name og summoner_tagline
           // .setURL('https://discord.js.org/')
           .setAuthor({ name: 'League Alert', iconURL: 'https://cdn.discordapp.com/app-icons/1222181268951662715/2c950cf3bd405b63cefaa70cbacdbe77.png?size=512&quot' })
           .setDescription('Besked der skriver at Jacob inter')
           .setThumbnail(`https://ddragon.leagueoflegends.com/cdn/14.11.1/img/champion/${champion}.png`)
           .addFields(
-            { name: 'Hvordan klarede Jacob det?', value: `${regularFieldDescription}` },
-            { name: '\u200A', value: '\u200A' },
-            { name: 'Champion', value: `${champion}`, inline: true },
-            { name: 'Lane', value: `${lane}`, inline: true },
-            { name: 'Role', value: `${role}`, inline: true },
+            ...(killMessage !== 'No Multi-Kills') ? [{ name: 'Multi kills', value: `${killMessage}` }] : [],
           )
           .addFields(
             { name: '\u200A', value: '\u200A' },
-            { name: 'Kills', value: `${kills}`, inline: true },
-            { name: 'Deaths', value: `${deaths}`, inline: true },
-            { name: 'Assists', value: `${assists}`, inline: true },
+            { name: 'Game duration', value: `${(gameDuration / 60).toFixed(2)} min.`, inline: true },
+            { name: 'Result', value: (win) ? 'Win' : 'Loss', inline: true },
             { name: '\u200A', value: '\u200A' },
-            { name: 'Creep Score', value: `${totalMinionsKilled}`, inline: true },
+          )
+          .addFields(
+            { name: 'Champion', value: `${champion}`, inline: true },
+            { name: 'Lane', value: `${lane}`, inline: true },
+          )
+          .addFields(
+            { name: '\u200A', value: '\u200A' },
+            { name: 'KDA', value: `${kills} / ${deaths} / ${assists}`, inline: true },
+            { name: 'Damage Dealt to Champions', value: `${totalDamageDealtToChampions.toLocaleString().replace(/,/g, ".")}`, inline: true },
+            { name: '\u200A', value: '\u200A' },
+            { name: 'Creep Score', value: `${cs}`, inline: true },
+            { name: 'CS per minute', value: `${csPerMinute.toFixed(1)}`, inline: true },
+            { name: '\u200A', value: '\u200A' },
+            ...(tank) ? [{ name: 'ABSOLUTE TANK', value: `${totalDamageTaken.toLocaleString().replace(/,/g, '.')} damage tanked`, inline: true }] : [],
+            ...(spell1Casts > 60) ? [{ name: 'Bror spammede Q', value: `${spell1Casts} gange`, inline: true }] : [],
+          )
+          .addFields(
+            { name: '\u200A', value: '\u200A' },
+            { name: 'Overall performance', value: `${overallPerformance}`},
           )
           .setTimestamp()
           .setFooter({ text: 'Bot developed by Jacobs number one hater', iconURL: 'https://cdn.discordapp.com/app-icons/1222181268951662715/2c950cf3bd405b63cefaa70cbacdbe77.png?size=512&quot' });
 
         await interaction.reply({ embeds: [message] })
-
-        // const message = `
-        // Champion: ${champion} 
-        // Kills: ${kills} 
-        // Deaths: ${deaths} 
-        // Lane: ${lane}
-        // `;
-        //
-        // await interaction.reply(message);
 
       } else {
         console.log('No participants found with the specified puuid');
