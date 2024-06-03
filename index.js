@@ -3,6 +3,7 @@ const fs = require('node:fs');
 // Path utility to construct paths to access files and dirs
 const path = require('node:path');
 require('dotenv').config();
+const cron = require('node-cron');
 
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
@@ -12,6 +13,7 @@ const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
 // Create a new client instance
 const token = process.env.TOKEN;
+const channelId = process.env.channelId
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -45,14 +47,23 @@ const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
-	const filePath = path.join(eventsPath, file);
-	const event = require(filePath);
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args));
-	}
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
+  }
 }
 
 // Log in to Discord with your client's token
 client.login(token);
+
+cron.schedule('*/2 * * * * * ', () => {
+  const targetChannel = client.channels.cache.get('799741154635546628');
+  if (targetChannel) {
+    targetChannel.send("hello")
+  } else {
+    console.log('Channel not found :(')
+  }
+})
