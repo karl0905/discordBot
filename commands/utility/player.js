@@ -1,9 +1,11 @@
 const { SlashCommandBuilder, inlineCode, EmbedBuilder } = require('discord.js');
 require('dotenv').config();
 const axios = require('axios')
-
 const riotapi = process.env.RIOTAPI
+const descriptions = require('../../modules/getDescriptions.js')
+const cron = require('node-cron');
 
+console.log("descriptions", descriptions)
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('player')
@@ -20,7 +22,6 @@ module.exports = {
     try {
       let gameName = interaction.options.get('summoner_name');
       const tagLine = interaction.options.getString('summoner_tagline')
-
       gameName = gameName.value.replace(/ /g, '%20');
 
       const response = await axios.get(`https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${riotapi}`);
@@ -33,6 +34,11 @@ module.exports = {
       const matchData = matchResponse.data;
       const matchingParticipant = matchData.info.participants.find(obj => obj.puuid === playerPuuid);
 
+      let lastGame = null;
+
+      async function fetchRecentGame() {
+
+      }
 
       if (matchingParticipant) {
         const kills = matchingParticipant.kills;
@@ -53,13 +59,15 @@ module.exports = {
         const gameDuration = matchData.info.gameDuration
         const csPerMinute = cs / (gameDuration / 60)
 
-        // Description string based on performance
-        let regularFieldDescription
-        if (kills > deaths) {
-          regularFieldDescription = "Jacob spillede godt 8)"
+        let descriptionType
+        if (win === true) {
+          descriptionType = "win";
         } else {
-          regularFieldDescription = "Jacob spillede ik så godt :("
+          descriptionType = "lose";
         }
+
+        const randomDescritionIndex = Math.floor(Math.random() * descriptions[descriptionType].descriptions.length);
+        const randomDescription = descriptions[descriptionType].descriptions[randomDescritionIndex];
 
         const overallPerformance = (() => {
           switch (true) {
@@ -103,7 +111,7 @@ module.exports = {
           // lav evt. link til u.gg med summoner_name og summoner_tagline
           // .setURL('https://discord.js.org/')
           .setAuthor({ name: 'League Alert', iconURL: 'https://cdn.discordapp.com/app-icons/1222181268951662715/2c950cf3bd405b63cefaa70cbacdbe77.png?size=512&quot' })
-          .setDescription('Besked der skriver at Jacob inter')
+          .setDescription(`${randomDescription}`)
           .setThumbnail(`https://ddragon.leagueoflegends.com/cdn/14.11.1/img/champion/${champion}.png`)
           .addFields(
             ...(killMessage !== 'No Multi-Kills') ? [{ name: 'Multi kills', value: `${killMessage}` }] : [],
@@ -131,7 +139,7 @@ module.exports = {
           )
           .addFields(
             { name: '\u200A', value: '\u200A' },
-            { name: 'Overall performance', value: `${overallPerformance}`},
+            { name: 'Overall performance', value: `${overallPerformance}` },
           )
           .setTimestamp()
           .setFooter({ text: 'Bot developed by Jacobs number one hater', iconURL: 'https://cdn.discordapp.com/app-icons/1222181268951662715/2c950cf3bd405b63cefaa70cbacdbe77.png?size=512&quot' });
