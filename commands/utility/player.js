@@ -4,6 +4,7 @@ const axios = require('axios')
 const riotapi = process.env.RIOTAPI
 const descriptions = require('../../modules/getDescriptions.js')
 const cron = require('node-cron');
+const getDescriptions = require('../../modules/getDescriptions.js');
 
 console.log("descriptions", descriptions)
 module.exports = {
@@ -14,15 +15,38 @@ module.exports = {
     // discord.js
     .addStringOption(option =>
       option.setName('summoner_name')
-        .setDescription('The name of the summoner'))
+        .setDescription('The name of the summoner')
+        .setRequired(true))
     .addStringOption(option =>
       option.setName('summoner_tagline')
-        .setDescription('The hashtag of the summoner without hashtag')),
+        .setDescription('The hashtag of the summoner without hashtag')
+        .setRequired(true)),
   async execute(interaction) {
     try {
       let gameName = interaction.options.get('summoner_name');
       const tagLine = interaction.options.getString('summoner_tagline')
       gameName = gameName.value.replace(/ /g, '%20');
+
+      //validation
+      if (!gameName || !tagLine) {
+        return interaction.reply({ content: 'Please provide both summoner name and tagline.', ephemeral: true });
+      }
+
+      if (isOliverHacking(gameName) || isOliverHacking(tagLine)) {
+        return interaction.reply({ content: 'Stop med at inject mig, Oliver', ephemeral: true })
+      } else if (!isValidString(gameName) || !isValidString(tagLine)) {
+        return interaction.reply({ content: 'Invalid input provided.', ephemeral: true })
+      }
+
+      function isOliverHacking(input) {
+        const regex = /[<>."'`/\&;?|:{}=+-]/;
+        return regex.test(input)
+      }
+      function isValidString(input) {
+        // Regular expression to match alphanumeric characters and spaces
+        const regex = /^[a-zA-Z0-9\s%]+$/;
+        return regex.test(input);
+      }
 
       const response = await axios.get(`https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${riotapi}`);
       const playerPuuid = response.data.puuid
@@ -49,6 +73,8 @@ module.exports = {
         const pentaKills = matchingParticipant.pentaKills
         const totalDamageTaken = matchingParticipant.totalDamageTaken
         const spell1Casts = matchingParticipant.spell1Casts
+
+        const descriptions = await getDescriptions();
 
         const gameDuration = matchData.info.gameDuration
         const csPerMinute = cs / (gameDuration / 60)
