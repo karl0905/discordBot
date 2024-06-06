@@ -68,7 +68,7 @@ client.once('ready', () => {
   console.log('klar');
 
   // Schedule a task to run every 2 seconds
-  cron.schedule('*/2 * * * * * ', async () => {
+  cron.schedule('* */2 * * * * ', async () => {
     try {
       const { playerPuuid, matchData, matchId} = await getRecentMatch();
       const descriptions = getDescriptions()
