@@ -67,8 +67,8 @@ client.login(token);
 client.once('ready', () => {
   console.log('klar');
 
-  // Schedule a task to run every 2 seconds
-  cron.schedule('* */1 * * * ', async () => {
+  // Schedule a task to run every 2 minutes
+  cron.schedule('* */2 * * * ', async () => {
     try {
       const { playerPuuid, matchData, matchId } = await getRecentMatch();
       const descriptions = getDescriptions()
@@ -77,7 +77,7 @@ client.once('ready', () => {
         console.log('no new game. returning')
         return;
       } else {
-        console.log('new game')
+        console.log('new game - discord message sent')
         writeMostRecentMatch({ mostRecentMatch: matchId })
         await buildNotificationEmbed(playerPuuid, matchData, client, descriptions, channelId);
       }

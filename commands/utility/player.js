@@ -42,6 +42,7 @@ module.exports = {
         const regex = /[<>."'`/\&;?|:{}=+-]/;
         return regex.test(input)
       }
+
       function isValidString(input) {
         // Regular expression to match alphanumeric characters and spaces
         const regex = /^[a-zA-Z0-9\s%]+$/;
@@ -51,7 +52,7 @@ module.exports = {
       const response = await axios.get(`https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${riotapi}`);
       const playerPuuid = response.data.puuid
       const newResponse = await axios.get(`https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerPuuid}/ids?start=0&count=20&api_key=${riotapi}`);
-      console.log(newResponse);
+      // console.log(newResponse);
       const matches = newResponse.data;
       const matchId = matches[0];
       const matchResponse = await axios.get(`https://europe.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${riotapi}`)
