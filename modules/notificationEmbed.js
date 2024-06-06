@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 
-async function buildNotificationEmbed(playerPuuid, matchData, client, descriptions) {
+async function buildNotificationEmbed(playerPuuid, matchData, client, descriptions, channelId) {
   try {
     const matchingParticipant = matchData.info.participants.find(obj => obj.puuid === playerPuuid);
     const {
@@ -103,7 +103,7 @@ async function buildNotificationEmbed(playerPuuid, matchData, client, descriptio
       .setTimestamp()
       .setFooter({ text: 'Bot developed by Jacobs number one hater', iconURL: 'https://cdn.discordapp.com/app-icons/1222181268951662715/2c950cf3bd405b63cefaa70cbacdbe77.png?size=512&quot' });
 
-    const targetChannel = client.channels.cache.get('799741154635546628');
+    const targetChannel = client.channels.cache.get(channelId);
     if (targetChannel) {
       targetChannel.send({ embeds: [notificationEmbed] })
     } else {
