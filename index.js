@@ -68,7 +68,7 @@ client.once('ready', () => {
   console.log('klar');
 
   // Schedule a task to run every 2 minutes
-  cron.schedule('* */2 * * * ', async () => {
+  cron.schedule('*/2 * * * *', async () => {
     try {
       const { playerPuuid, matchData, matchId } = await getRecentMatch();
       const descriptions = getDescriptions()
@@ -81,7 +81,6 @@ client.once('ready', () => {
         writeMostRecentMatch({ mostRecentMatch: matchId })
         await buildNotificationEmbed(playerPuuid, matchData, client, descriptions, channelId);
       }
-
     } catch (error) {
       console.error('Error in scheduled task:', error)
     }
