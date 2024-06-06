@@ -34,12 +34,6 @@ module.exports = {
       const matchData = matchResponse.data;
       const matchingParticipant = matchData.info.participants.find(obj => obj.puuid === playerPuuid);
 
-      let lastGame = null;
-
-      async function fetchRecentGame() {
-
-      }
-
       if (matchingParticipant) {
         const kills = matchingParticipant.kills;
         const deaths = matchingParticipant.deaths;

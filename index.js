@@ -4,6 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 require('dotenv').config();
 const cron = require('node-cron');
+const buildNotificationEmbed = require('./modules/notificationEmbed.js')
+const getRecentMatch = require('./modules/getRecentMatch.js')
+const getDescriptions = require('./modules/getDescriptions.js')
+const getMostRecentMatch = require('./modules/getMostRecentMatch.js')
+const writeMostRecentMatch = require('./modules/writeMostRecentMatch.js')
 
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
@@ -59,11 +64,26 @@ for (const file of eventFiles) {
 // Log in to Discord with your client's token
 client.login(token);
 
-cron.schedule('*/2 * * * * * ', () => {
-  const targetChannel = client.channels.cache.get('799741154635546628');
-  if (targetChannel) {
-    targetChannel.send("hello")
-  } else {
-    console.log('Channel not found :(')
-  }
+client.once('ready', () => {
+  console.log('klar');
+
+  // Schedule a task to run every 2 seconds
+  cron.schedule('*/2 * * * * * ', async () => {
+    try {
+      const { playerPuuid, matchData, matchId} = await getRecentMatch();
+      const descriptions = getDescriptions()
+      const mostRecentMatch = getMostRecentMatch();
+      if (matchId === mostRecentMatch) {
+        console.log('no new game. returning')
+        return;
+      } else {
+        console.log('new game')
+        writeMostRecentMatch({mostRecentMatch: matchId})
+        await buildNotificationEmbed(playerPuuid, matchData, client, descriptions);
+      }
+
+    } catch (error) {
+      console.error('Error in scheduled task:', error)
+    }
+  })
 })
