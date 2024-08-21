@@ -1,3 +1,4 @@
+// Badge refresh
 // File system module - Node's native - used to read commands dir
 const fs = require('node:fs');
 // Path utility to construct paths to access files and dirs
