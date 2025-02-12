@@ -1,0 +1,12 @@
+{
+  "win": {
+    "descriptions": [
+      "this is where the winning descriptions would be"
+    ]
+  },
+  "lose": {
+    "descriptions": [
+      "this is where the losing descriptions would be"
+    ]
+  }
+}
