@@ -1,3 +1,4 @@
+require('dotenv').config();
 const riotapi = process.env.RIOTAPI
 const axios = require('axios')
 let gameName = process.env.STATICGAMENAME
